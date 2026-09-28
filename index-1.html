@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFC72C">
+<title>Rotisería Yamil – Hacé tu pedido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ====== COLORES (cambiá acá si querés otra paleta) ====== */
+:root{
+  --amarillo:#FFC72C;   /* caja de pizza */
+  --tomate:#D7261E;     /* precios y botones */
+  --carbon:#231815;     /* texto */
+  --papel:#FFFFFF;      /* fondo */
+  --gris:#6B5F5A;       /* textos secundarios */
+  --linea:#EFE6DC;
+  --wsp:#1FA855;        /* botón de WhatsApp */
+  --titulo:'Anton', Impact, 'Arial Narrow', sans-serif;
+  --texto:'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--texto);color:var(--carbon);background:var(--papel);font-size:18px;line-height:1.4;padding-bottom:110px;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--tomate);outline-offset:2px}
+
+/* ====== CABECERA ====== */
+.hero{background:var(--amarillo);padding:calc(28px + env(safe-area-inset-top,0px)) 20px 22px}
+.hero h1{font-family:var(--titulo);font-weight:400;font-size:clamp(56px,17vw,96px);line-height:.88;letter-spacing:.5px;text-transform:uppercase}
+.hero h1 span{display:block;font-size:.42em;letter-spacing:1px}
+.datos{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.datos li{list-style:none;background:var(--carbon);color:#fff;font-weight:500;font-size:15px;padding:7px 12px;border-radius:999px}
+
+/* ====== MENÚ DE CATEGORÍAS ====== */
+.nav{position:sticky;top:0;z-index:20;background:var(--papel);border-bottom:2px solid var(--carbon);padding-top:env(safe-area-inset-top,0px)}
+.nav ul{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;scrollbar-width:none}
+.nav ul::-webkit-scrollbar{display:none}
+.nav a{display:block;white-space:nowrap;text-decoration:none;color:var(--carbon);font-weight:700;font-size:16px;padding:9px 15px;border:2px solid var(--carbon);border-radius:999px}
+.nav a.on{background:var(--carbon);color:#fff}
+
+/* ====== SECCIONES ====== */
+section{padding:26px 16px 8px;scroll-margin-top:70px}
+section h2{font-family:var(--titulo);font-weight:400;font-size:44px;line-height:1;text-transform:uppercase}
+.sub{color:var(--gris);font-size:16px;margin-top:6px}
+#top{background:#FFF3CF;margin-bottom:8px;padding-bottom:18px}
+#top h2{color:var(--tomate)}
+ul.items{list-style:none;margin-top:10px}
+.it{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--linea)}
+.it:last-child{border-bottom:0}
+.it-t{flex:1;min-width:0}
+.it-n{display:block;font-weight:500;font-size:19px}
+.it-d{display:block;color:var(--gris);font-size:15px;margin-top:2px}
+.it-p{font-family:var(--titulo);font-size:26px;color:var(--tomate);white-space:nowrap}
+.add{position:relative;flex:none;width:48px;height:48px;border-radius:14px;border:0;background:var(--tomate);color:#fff;font-size:30px;line-height:1;font-weight:500}
+.add:active{transform:scale(.92)}
+.badge{position:absolute;top:-7px;right:-7px;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:var(--carbon);color:#fff;font-size:14px;font-weight:700;line-height:24px;display:none}
+.badge.show{display:block}
+
+/* ====== BARRA DEL PEDIDO ====== */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(255,255,255,.95) 30%)}
+.bar button{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;border-radius:18px;background:var(--carbon);color:#fff;padding:16px 20px;font-size:19px;font-weight:700}
+.bar button span:last-child{font-family:var(--titulo);font-weight:400;font-size:26px;color:var(--amarillo)}
+.bar.hide{display:none}
+
+/* ====== HOJAS (ventanas que suben desde abajo) ====== */
+.velo{position:fixed;inset:0;background:rgba(35,24,21,.55);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.velo.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--papel);border-radius:22px 22px 0 0;max-height:92vh;overflow-y:auto;padding:20px 18px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .25s ease}
+.sheet.open{transform:none}
+.sheet h3{font-family:var(--titulo);font-weight:400;font-size:34px;line-height:1.05;text-transform:uppercase;padding-right:48px}
+.cerrar{position:absolute;top:14px;right:14px;width:44px;height:44px;border:0;border-radius:50%;background:var(--linea);font-size:24px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.opt{padding:16px 10px;border:2px solid var(--carbon);border-radius:14px;background:#fff;font-weight:700;font-size:18px}
+.opt.sel{background:var(--carbon);color:#fff}
+label{display:block;font-weight:700;margin:16px 0 6px;font-size:17px}
+input,textarea{width:100%;padding:14px;border:2px solid #CFC3B8;border-radius:12px;font-size:18px;background:#fff}
+input:focus,textarea:focus{border-color:var(--carbon);outline:0}
+textarea{min-height:80px;resize:vertical}
+.btn{display:block;width:100%;margin-top:20px;border:0;border-radius:16px;padding:18px;font-size:20px;font-weight:700;background:var(--tomate);color:#fff}
+.btn.wsp{background:var(--wsp)}
+
+/* Pedido */
+.linea{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--linea)}
+.linea .t{flex:1;min-width:0;font-weight:500}
+.linea .t small{display:block;color:var(--gris);font-weight:400;font-size:15px}
+.linea .pr{font-weight:700;white-space:nowrap}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:38px;height:38px;border-radius:10px;border:2px solid var(--carbon);background:#fff;font-size:22px;font-weight:700;line-height:1}
+.step b{min-width:22px;text-align:center}
+.desc{color:var(--wsp);font-weight:700;padding:10px 0}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 4px;border-top:2px solid var(--carbon);margin-top:6px}
+.total span:last-child{font-family:var(--titulo);font-size:36px;color:var(--tomate)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills button{padding:12px 16px;border:2px solid var(--carbon);border-radius:999px;background:#fff;font-weight:700;font-size:17px}
+.pills button.sel{background:var(--carbon);color:#fff}
+.alias{margin-top:12px;background:#FFF3CF;border-radius:12px;padding:14px;font-size:17px}
+.alias strong{font-size:20px;word-break:break-all}
+.alias button{margin-top:8px;border:2px solid var(--carbon);background:#fff;border-radius:10px;padding:8px 14px;font-weight:700}
+.error{color:var(--tomate);font-weight:700;margin-top:12px;min-height:1.2em}
+.vacio{padding:24px 0;color:var(--gris)}
+.oculto{display:none}
+
+/* Aviso "agregado" */
+.toast{position:fixed;left:50%;bottom:96px;z-index:60;transform:translate(-50%,20px);background:var(--carbon);color:#fff;padding:12px 18px;border-radius:12px;font-weight:500;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+footer{text-align:center;color:var(--gris);font-size:15px;padding:30px 16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1><span>Rotisería</span>Yamil</h1>
+  <ul class="datos">
+    <li>Envío gratis hasta 2 km</li>
+    <li>Llega en unos 25 min</li>
+    <li>General Rodríguez</li>
+  </ul>
+</header>
+
+<nav class="nav" aria-label="Categorías"><ul id="nav"></ul></nav>
+
+<main id="menu"></main>
+
+<footer>Elegí lo que quieras y el pedido se manda por WhatsApp.</footer>
+
+<div class="bar hide" id="bar">
+  <button id="verPedido"><span id="barTxt">Ver pedido</span><span id="barTotal">$0</span></button>
+</div>
+
+<div class="velo" id="velo"></div>
+
+<!-- Hoja para elegir variante (carne/pollo, gustos, etc.) -->
+<div class="sheet" id="sheetOpt" role="dialog" aria-modal="true">
+  <button class="cerrar" data-cerrar aria-label="Cerrar">×</button>
+  <h3 id="optTitulo"></h3>
+  <div class="opts" id="optBotones"></div>
+  <div id="optNotaBox"><label for="optNota" id="optNotaLbl"></label><input id="optNota"></div>
+  <p class="error" id="optError"></p>
+  <button class="btn" id="optAgregar">Agregar al pedido</button>
+</div>
+
+<!-- Hoja del pedido -->
+<div class="sheet" id="sheetPedido" role="dialog" aria-modal="true">
+  <button class="cerrar" data-cerrar aria-label="Cerrar">×</button>
+  <h3>Tu pedido</h3>
+  <div id="lineas"></div>
+
+  <div id="datosCliente">
+    <label for="nombre">Tu nombre</label>
+    <input id="nombre" autocomplete="name">
+
+    <label>¿Cómo lo recibís?</label>
+    <div class="pills" id="modo">
+      <button data-v="Envío a domicilio" class="sel">Envío a domicilio</button>
+      <button data-v="Retiro en el local">Retiro en el local</button>
+    </div>
+
+    <div id="boxDir">
+      <label for="direccion">Dirección (calle y número)</label>
+      <input id="direccion" autocomplete="street-address">
+      <label for="referencia">Entre calles o referencia</label>
+      <input id="referencia" placeholder="Ej: casa con reja verde">
+    </div>
+
+    <label>¿Cómo pagás?</label>
+    <div class="pills" id="pago">
+      <button data-v="Efectivo">Efectivo</button>
+      <button data-v="Transferencia">Transferencia</button>
+      <button data-v="Tarjeta">Tarjeta</button>
+    </div>
+    <div id="boxVuelto" class="oculto">
+      <label for="vuelto">¿Con cuánto pagás? (para llevarte el vuelto)</label>
+      <input id="vuelto" inputmode="numeric" placeholder="Ej: 50000">
+    </div>
+    <div id="boxAlias" class="alias oculto">
+      Alias: <strong id="aliasTxt"></strong><br>
+      <button id="copiarAlias">Copiar alias</button>
+      <p style="margin-top:8px">Mandá el comprobante por WhatsApp después del pedido.</p>
+    </div>
+
+    <label for="nota">Aclaraciones (opcional)</label>
+    <textarea id="nota" placeholder="Ej: sin sal, tocar timbre 2"></textarea>
+
+    <p class="error" id="error"></p>
+    <button class="btn wsp" id="enviar">Enviar pedido por WhatsApp</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIGURACIÓN — lo único que tenés que tocar seguido
+   ========================================================= */
+const WHATSAPP = "549XXXXXXXXXX"; // Número de Marcela: 549 + característica sin 0 + número sin 15. Ej: 5492374123456
+const ALIAS = "rotiseriayamil";  // Confirmar con Cristian (los alias no llevan tilde)
+const EMP = { unidad:2500, media:14000 }; // Empanadas: la docena = 2 medias
+
+/* =========================================================
+   MENÚ — para cambiar un precio, cambiá el número "p"
+   n = nombre, p = precio, d = descripción, o = opciones,
+   nota = pide un dato extra, emp = es empanada
+   ========================================================= */
+const MENU = [
+  { id:"top", t:"Lo más pedido", sub:"Los favoritos de la casa.", ref:["sm1","sm2","sm4","pollo"] },
+  { id:"promos", t:"Promos", items:[
+    { n:"3 muzzas", p:34000 },
+    { n:"1 muzza + 6 empanadas", p:24000, nota:"¿Qué gustos de empanadas?" },
+    { n:"2 muzzas + 12 empanadas", p:47000, nota:"¿Qué gustos de empanadas?" }
+  ]},
+  { id:"pizzas", t:"Pizzas", items:[
+    { n:"Mozzarella", p:12000 },
+    { n:"Mozzarella y fritas", p:20000 },
+    { n:"Mozzarella y salchicha", p:14000 },
+    { n:"Mozzarella y jamón", p:16000 },
+    { n:"Mozzarella y huevo", p:15000 },
+    { n:"Mozzarella y champiñones", p:15000 },
+    { n:"Mozzarella y tomate", p:15000 },
+    { n:"Mozzarella, tomate y jamón", p:18000 },
+    { n:"Mozzarella, jamón y huevo", p:19000 },
+    { n:"Jamón y morrones", p:19000 },
+    { n:"Jamón y ananá", p:19000 },
+    { n:"Jamón, morrón y huevo", p:21000 },
+    { n:"Calabresa", p:16000 },
+    { n:"Fugazzeta", p:14000 },
+    { n:"Fugazzeta y jamón", p:18000 },
+    { n:"Roquefort", p:16000 },
+    { n:"Palmito y salsa golf", p:17000 },
+    { n:"Anchoa", p:16000 },
+    { n:"Mozzarella, panceta y huevo", p:18000 },
+    { n:"Mozzarella, panceta y cheddar", p:18000 },
+    { n:"Mozzarella, panceta, cheddar y huevo", p:20000 },
+    { n:"Mozzarella, huevo y salchicha", p:17000 },
+    { n:"Mozzarella, huevo, salchicha y panceta", p:19000 },
+    { n:"Mozzarella, huevo, salchicha y cheddar", p:19000 },
+    { n:"Mozzarella, huevo, salchicha, cheddar y panceta", p:21000 },
+    { n:"Mozzarella, huevo, salchicha, cheddar, panceta y fritas", p:29000 },
+    { n:"Pizza con paty", p:23000 },
+    { n:"Pizza con paty y fritas", p:29000 },
+    { n:"Pizza con paty, fritas y huevo", p:30000 },
+    { n:"Pizza con paty, fritas, huevo y cheddar", p:32000 }
+  ]},
+  { id:"empanadas", t:"Empanadas", sub:"Unidad $2.500. Media docena $14.000. Docena $28.000. El precio por docena se calcula solo.", items:[
+    { n:"Carne", p:2500, emp:true },
+    { n:"Pollo", p:2500, emp:true },
+    { n:"Jamón y queso", p:2500, emp:true },
+    { n:"Cantimpalo", p:2500, emp:true },
+    { n:"Roquefort", p:2500, emp:true },
+    { n:"Panceta y mozzarella", p:2500, emp:true },
+    { n:"Panceta, mozzarella y ciruela", p:2500, emp:true }
+  ]},
+  { id:"sandwiches", t:"Sándwiches", sub:"Todos con fritas.", items:[
+    { id:"sm1", n:"Sándwich de milanesa sola", p:18000, o:["Carne","Pollo"] },
+    { id:"sm2", n:"Sándwich de milanesa jamón y queso", p:20000, o:["Carne","Pollo"] },
+    { id:"sm3", n:"Sándwich de milanesa jamón, queso y huevo", p:21000, o:["Carne","Pollo"] },
+    { id:"sm4", n:"Sándwich de milanesa completo", d:"Lechuga, tomate, jamón, queso y huevo", p:22000, o:["Carne","Pollo"] },
+    { n:"Sándwich de lomito solo", p:18000 },
+    { n:"Sándwich de lomito jamón y queso", p:20000 },
+    { n:"Sándwich de lomito jamón, queso y huevo", p:21000 },
+    { n:"Sándwich de lomito completo", d:"Lechuga, tomate, jamón, queso y huevo", p:22000 }
+  ]},
+  { id:"milanesas", t:"Milanesas al plato", sub:"De carne o pollo, todas con fritas.", items:[
+    { n:"Milanesa sola", p:17000, o:["Carne","Pollo"] },
+    { n:"Milanesa napolitana", p:20000, o:["Carne","Pollo"] },
+    { n:"Milanesa roquefort y jamón", p:21000, o:["Carne","Pollo"] },
+    { n:"Milanesa panceta, huevo y muzza", p:21000, o:["Carne","Pollo"] },
+    { n:"Milanesa muzza, jamón y morrones", p:21000, o:["Carne","Pollo"] }
+  ]},
+  { id:"hamburguesas", t:"Hamburguesas", sub:"Paty Super, todas con fritas.", items:[
+    { n:"Hamburguesa sola", p:11000 },
+    { n:"Hamburguesa lechuga y tomate", p:13000 },
+    { n:"Hamburguesa jamón y queso", p:13000 },
+    { n:"Hamburguesa bacon y cheddar", p:14000 },
+    { n:"Hamburguesa completa", d:"Lechuga, tomate, jamón, queso y huevo", p:15000 }
+  ]},
+  { id:"pollo", t:"Pollo y minutas", items:[
+    { id:"pollo", n:"Pollo al spiedo con fritas", p:25000 },
+    { n:"Matambre a la pizza con fritas", p:20000 },
+    { n:"Nuggets 500 g", p:14000 },
+    { n:"Nuggets 500 g + fritas", p:20000 },
+    { n:"Nuggets 300 g + fritas", p:15000 }
+  ]},
+  { id:"pastas", t:"Pastas frescas", sub:"Con salsa bolognesa.", items:[
+    { n:"Ravioles", p:16000, nota:"¿De qué gusto? (según stock)" },
+    { n:"Sorrentinos caseros de jamón y queso", p:16000 }
+  ]},
+  { id:"fritas", t:"Fritas", items:[
+    { n:"Fritas solas", p:12000 },
+    { n:"Fritas con cheddar", p:15000 },
+    { n:"Fritas con cheddar y panceta", p:17000 }
+  ]},
+  { id:"tortillas", t:"Tortillas", items:[
+    { n:"Tortilla sola", p:14000 },
+    { n:"Tortilla jamón y queso", p:17000 },
+    { n:"Tortilla cantimpalo y mozzarella", p:17000 },
+    { n:"Tortilla panceta y mozzarella", p:17000 },
+    { n:"Tortilla panceta y cheddar", p:17000 },
+    { n:"Tortilla roquefort y mozzarella", p:17000 }
+  ]},
+  { id:"helados", t:"Helados Grido", items:[
+    { n:"Almendrado", p:3000 },
+    { n:"Cassata tricolor", p:3000 },
+    { n:"Bombón escocés", p:3000 },
+    { n:"Bombón suizo", p:3000 },
+    { n:"Bombón Frutezza", p:3000 },
+    { n:"Alfajor Secreto", p:3500 },
+    { n:"Bocaditos de frambuesa", p:7500 },
+    { n:"Bocaditos de frutilla", p:7500 },
+    { n:"Tentación 1 litro", p:9000, nota:"¿Qué gustos? (según stock)" },
+    { n:"Pote familiar 1,6 kg", d:"3 gustos", p:17000, nota:"¿Qué 3 gustos?" },
+    { n:"Torta helada", p:17000, o:["Frutilla con crema","Dulce de leche"] }
+  ]},
+  { id:"bebidas", t:"Bebidas", items:[
+    { n:"Manaos", p:2500, o:["Cola","Naranja","Lima","Pomelo"] },
+    { n:"Placer 1,5 L", p:2000, o:["Manzana","Pomelo","Multifruta","Ananá","Pera"] },
+    { n:"Pepsi 2 L", p:4000 },
+    { n:"Gaseosa 2,25 L", p:6500, o:["Coca-Cola","Sprite"] },
+    { n:"Brahma lata", p:3500 },
+    { n:"Brahma latón", p:4500 },
+    { n:"Corona 710 cc", p:7000 }
+  ]}
+];
+
+/* =========================================================
+   DE ACÁ PARA ABAJO: el funcionamiento. No hace falta tocar.
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const plata = n => "$" + n.toLocaleString("es-AR");
+const ITEMS = {};
+const pedido = new Map(); // clave -> {id, opt, nota, q}
+
+MENU.forEach(s => (s.items||[]).forEach((it,i) => { it.id = it.id || s.id+"-"+i; ITEMS[it.id] = it; }));
+
+// Dibujar menú y categorías
+function fila(it){
+  return `<li class="it">
+    <div class="it-t"><span class="it-n">${it.emp ? "Empanada de " + it.n.toLowerCase() : it.n}</span>${it.d?`<span class="it-d">${it.d}</span>`:""}${it.o?`<span class="it-d">${it.o.join(" o ")}</span>`:""}</div>
+    <span class="it-p">${plata(it.p)}</span>
+    <button class="add" data-id="${it.id}" aria-label="Agregar ${it.n}">+<b class="badge" data-badge="${it.id}"></b></button>
+  </li>`;
+}
+$("#menu").innerHTML = MENU.map(s => `
+  <section id="${s.id}">
+    <h2>${s.t}</h2>${s.sub?`<p class="sub">${s.sub}</p>`:""}
+    <ul class="items">${(s.ref ? s.ref.map(r=>ITEMS[r]) : s.items).map(fila).join("")}</ul>
+  </section>`).join("");
+$("#nav").innerHTML = MENU.map(s => `<li><a href="#${s.id}" data-sec="${s.id}">${s.id==="top"?"Más pedido":s.t.replace(" al plato","").replace(" frescas","").replace(" Grido","")}</a></li>`).join("");
+
+// Resaltar la categoría que se está viendo
+const obs = new IntersectionObserver(entradas => {
+  entradas.forEach(e => {
+    if(!e.isIntersecting) return;
+    document.querySelectorAll(".nav a").forEach(a => a.classList.toggle("on", a.dataset.sec === e.target.id));
+    const act = document.querySelector(`.nav a[data-sec="${e.target.id}"]`);
+    if(act) act.scrollIntoView({inline:"center", block:"nearest"});
+  });
+},{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("section").forEach(s => obs.observe(s));
+
+// Agregar productos
+function agregar(id, opt="", nota=""){
+  const k = id+"|"+opt+"|"+nota;
+  const l = pedido.get(k) || {id, opt, nota, q:0};
+  l.q++; pedido.set(k, l);
+  actualizar();
+  const it = ITEMS[id];
+  aviso("Agregado: " + (it.emp ? "empanada de " + it.n.toLowerCase() : it.n) + (opt?" ("+opt+")":""));
+}
+$("#menu").addEventListener("click", e => {
+  const b = e.target.closest(".add"); if(!b) return;
+  const it = ITEMS[b.dataset.id];
+  (it.o || it.nota) ? abrirOpciones(it) : agregar(it.id);
+});
+
+// Hoja de opciones
+let itemActual = null, optSel = "";
+function abrirOpciones(it){
+  itemActual = it; optSel = "";
+  $("#optTitulo").textContent = it.n;
+  $("#optBotones").innerHTML = (it.o||[]).map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join("");
+  $("#optBotones").classList.toggle("oculto", !it.o);
+  $("#optNotaBox").classList.toggle("oculto", !it.nota);
+  $("#optNotaLbl").textContent = it.nota || "";
+  $("#optNota").value = "";
+  $("#optError").textContent = "";
+  $("#optAgregar").textContent = "Agregar al pedido · " + plata(it.p);
+  abrir("#sheetOpt");
+}
+$("#optBotones").addEventListener("click", e => {
+  const b = e.target.closest(".opt"); if(!b) return;
+  optSel = b.dataset.o;
+  document.querySelectorAll(".opt").forEach(x => x.classList.toggle("sel", x===b));
+  if(!itemActual.nota){ agregar(itemActual.id, optSel); cerrar(); } // si solo hay que elegir opción, se agrega al toque
+});
+$("#optAgregar").addEventListener("click", () => {
+  const nota = $("#optNota").value.trim();
+  if(itemActual.o && !optSel) return $("#optError").textContent = "Elegí una opción.";
+  if(itemActual.nota && !nota) return $("#optError").textContent = "Completá este dato para que Marcela sepa qué preparar.";
+  agregar(itemActual.id, optSel, nota); cerrar();
+});
+
+// Cálculos
+function cuentas(){
+  let resto = 0, emp = 0;
+  pedido.forEach(l => { ITEMS[l.id].emp ? emp += l.q : resto += ITEMS[l.id].p * l.q; });
+  const precioEmp = Math.floor(emp/6)*EMP.media + (emp%6)*EMP.unidad;
+  const descuento = emp*EMP.unidad - precioEmp;
+  const cant = [...pedido.values()].reduce((a,l)=>a+l.q,0);
+  return { total: resto + precioEmp, emp, descuento, cant };
+}
+function nombreLinea(l){
+  const it = ITEMS[l.id];
+  return (it.emp ? "Empanada de " + it.n.toLowerCase() : it.n) + (l.opt ? " (" + l.opt + ")" : "");
+}
+
+function actualizar(){
+  const c = cuentas();
+  // contadores en los botones +
+  document.querySelectorAll("[data-badge]").forEach(b => {
+    let n = 0; pedido.forEach(l => { if(l.id === b.dataset.badge) n += l.q; });
+    b.textContent = n; b.classList.toggle("show", n>0);
+  });
+  $("#bar").classList.toggle("hide", c.cant === 0);
+  $("#barTxt").textContent = `Ver pedido (${c.cant})`;
+  $("#barTotal").textContent = plata(c.total);
+  // lista del pedido
+  if(c.cant === 0){
+    $("#lineas").innerHTML = `<p class="vacio">Tu pedido está vacío. Tocá + en lo que quieras.</p>`;
+    $("#datosCliente").classList.add("oculto");
+    return;
+  }
+  $("#datosCliente").classList.remove("oculto");
+  let html = "";
+  pedido.forEach((l,k) => {
+    html += `<div class="linea">
+      <div class="t">${nombreLinea(l)}${l.nota?`<small>${l.nota}</small>`:""}</div>
+      <div class="step"><button data-k="${k}" data-d="-1" aria-label="Quitar uno">−</button><b>${l.q}</b><button data-k="${k}" data-d="1" aria-label="Sumar uno">+</button></div>
+      <span class="pr">${plata(ITEMS[l.id].p * l.q)}</span></div>`;
+  });
+  if(c.descuento > 0) html += `<div class="desc">Precio por docena en empanadas: −${plata(c.descuento)}</div>`;
+  html += `<div class="total"><span>Total</span><span>${plata(c.total)}</span></div>`;
+  $("#lineas").innerHTML = html;
+}
+$("#lineas").addEventListener("click", e => {
+  const b = e.target.closest("[data-k]"); if(!b) return;
+  const l = pedido.get(b.dataset.k);
+  l.q += Number(b.dataset.d);
+  if(l.q <= 0) pedido.delete(b.dataset.k);
+  actualizar();
+});
+
+// Abrir / cerrar hojas
+function abrir(sel){ $(sel).classList.add("open"); $("#velo").classList.add("open"); document.body.style.overflow="hidden"; }
+function cerrar(){ document.querySelectorAll(".sheet").forEach(s=>s.classList.remove("open")); $("#velo").classList.remove("open"); document.body.style.overflow=""; }
+$("#velo").addEventListener("click", cerrar);
+document.querySelectorAll("[data-cerrar]").forEach(b => b.addEventListener("click", cerrar));
+$("#verPedido").addEventListener("click", () => { actualizar(); abrir("#sheetPedido"); });
+
+// Botones tipo píldora (modo de entrega y pago)
+let modo = "Envío a domicilio", pago = "";
+function pildoras(sel, fn){
+  $(sel).addEventListener("click", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    $(sel).querySelectorAll("button").forEach(x => x.classList.toggle("sel", x===b));
+    fn(b.dataset.v);
+  });
+}
+pildoras("#modo", v => { modo = v; $("#boxDir").classList.toggle("oculto", v !== "Envío a domicilio"); });
+pildoras("#pago", v => {
+  pago = v;
+  $("#boxVuelto").classList.toggle("oculto", v !== "Efectivo");
+  $("#boxAlias").classList.toggle("oculto", v !== "Transferencia");
+});
+$("#aliasTxt").textContent = ALIAS;
+$("#copiarAlias").addEventListener("click", () => {
+  navigator.clipboard?.writeText(ALIAS).then(() => aviso("Alias copiado"), () => aviso("Mantené apretado el alias para copiarlo"));
+});
+
+// Recordar nombre y dirección del cliente para la próxima vez
+try{
+  const g = JSON.parse(localStorage.getItem("yamil-cliente") || "{}");
+  ["nombre","direccion","referencia"].forEach(c => { if(g[c]) $("#"+c).value = g[c]; });
+}catch(e){}
+
+// Enviar por WhatsApp
+$("#enviar").addEventListener("click", () => {
+  const nombre = $("#nombre").value.trim();
+  const dir = $("#direccion").value.trim();
+  const ref = $("#referencia").value.trim();
+  const err = $("#error");
+  if(!nombre) return err.textContent = "Falta tu nombre.";
+  if(modo === "Envío a domicilio" && !dir) return err.textContent = "Falta la dirección de entrega.";
+  if(!pago) return err.textContent = "Elegí cómo vas a pagar.";
+  err.textContent = "";
+
+  const c = cuentas();
+  let m = `🍕 *PEDIDO – ROTISERÍA YAMIL*\n\n`;
+  m += `👤 *Nombre:* ${nombre}\n`;
+  m += modo === "Envío a domicilio"
+    ? `🛵 *Envío a:* ${dir}${ref ? " (" + ref + ")" : ""}\n`
+    : `🏪 *Retira en el local*\n`;
+  m += `💳 *Pago:* ${pago}`;
+  const vuelto = $("#vuelto").value.replace(/\D/g,"");
+  if(pago === "Efectivo" && vuelto) m += ` (paga con ${plata(Number(vuelto))})`;
+  m += `\n\n*Pedido:*\n`;
+  pedido.forEach(l => {
+    m += `• ${l.q} x ${nombreLinea(l)} — ${plata(ITEMS[l.id].p * l.q)}\n`;
+    if(l.nota) m += `   ↳ ${l.nota}\n`;
+  });
+  if(c.descuento > 0) m += `• Precio por docena empanadas: −${plata(c.descuento)}\n`;
+  m += `\n💰 *TOTAL: ${plata(c.total)}*`;
+  const nota = $("#nota").value.trim();
+  if(nota) m += `\n\n📝 *Aclaraciones:* ${nota}`;
+
+  try{ localStorage.setItem("yamil-cliente", JSON.stringify({nombre, direccion:dir, referencia:ref})); }catch(e){}
+  window.location.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(m)}`;
+});
+
+// Aviso chiquito abajo
+let tAviso;
+function aviso(txt){
+  const t = $("#toast"); t.textContent = txt; t.classList.add("show");
+  clearTimeout(tAviso); tAviso = setTimeout(() => t.classList.remove("show"), 1600);
+}
+
+actualizar();
+</script>
+</body>
+</html>
